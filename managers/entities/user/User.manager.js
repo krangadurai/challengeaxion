@@ -8,7 +8,7 @@ module.exports = class User {
         this.mongomodels = mongomodels;
         this.tokenManager = managers.token;
         this.usersCollection = "users";
-        this.userExposed = ['createUser', 'login', 'list', 'createRole', 'update', 'register', 'userRoleChange', 'verify'];
+        this.userExposed = ['createUser', 'login', 'list', 'createRole', 'update', 'register', 'userRoleChange', 'verify','getRoles'];
     }
 
     async login(data) {
@@ -172,6 +172,27 @@ module.exports = class User {
             return { errors: 'Access Denied' }
         }
 
+    }
+    async getRoles(data){
+        const {res } = data;
+        if (!res.req.headers['authorization']) {
+            return { errors: "plase Login" }
+        }
+        let verify = await this.verifytoken(res.req.headers['authorization'], ['superAdmin'])
+        if (verify !== true) {
+            return verify;
+        }
+
+        try{
+            let roles = await this.mongomodels.role.find();
+
+            return{
+                roles
+            }
+
+        }catch(e){
+            return {errors : `${e.message}`}
+        }
 
     }
 
